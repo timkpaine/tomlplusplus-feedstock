@@ -214,5 +214,6 @@ Feedstock Maintainers
 =====================
 
 * [@h-vetinari](https://github.com/h-vetinari/)
+* [@timkpaine](https://github.com/timkpaine/)
 * [@traversaro](https://github.com/traversaro/)
 
