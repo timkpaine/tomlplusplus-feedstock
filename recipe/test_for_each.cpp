@@ -1,6 +1,6 @@
 #include <toml++/toml.h>
 
-#if TOML_MSVC
+#if defined(_MSC_VER) && !defined(__clang__) && !defined(__INTEL_COMPILER)
 static_assert(TOML_DISABLE_CONDITIONAL_NOEXCEPT_LAMBDA == 1);
 #else
 static_assert(TOML_DISABLE_CONDITIONAL_NOEXCEPT_LAMBDA == 0);
