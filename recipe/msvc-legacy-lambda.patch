@@ -1,0 +1,53 @@
+Backport https://github.com/marzer/tomlplusplus/pull/247.
+Enable the workaround by default for MSVC so installed headers support its legacy lambda processor.
+
+--- a/include/toml++/impl/array.hpp
++++ b/include/toml++/impl/array.hpp
+@@ -951,7 +951,10 @@
+ 					static_cast<node_ref>(static_cast<Array&&>(arr)[i])
+ 						.visit(
+ 							[&]([[maybe_unused]] auto&& elem) //
++// Define this macro as a workaround to compile errors caused by a bug in MSVC's "legacy lambda processor".
++#if !TOML_DISABLE_CONDITIONAL_NOEXCEPT_LAMBDA
+ 							noexcept(for_each_is_nothrow_one<Func&&, Array&&, decltype(elem)>::value)
++#endif
+ 							{
+ 								using elem_ref = for_each_elem_ref<decltype(elem), Array&&>;
+ 								static_assert(std::is_reference_v<elem_ref>);
+--- a/include/toml++/impl/preprocessor.hpp
++++ b/include/toml++/impl/preprocessor.hpp
+@@ -1211,6 +1211,21 @@
+ /// \detail Defaults to `0`.
+ //# }}
+ 
++#ifndef TOML_DISABLE_CONDITIONAL_NOEXCEPT_LAMBDA
++#if TOML_MSVC
++#define TOML_DISABLE_CONDITIONAL_NOEXCEPT_LAMBDA 1
++#else
++#define TOML_DISABLE_CONDITIONAL_NOEXCEPT_LAMBDA 0
++#endif
++#endif
++//# {{
++/// \def TOML_DISABLE_CONDITIONAL_NOEXCEPT_LAMBDA
++/// \brief Disable using noexcept(<condition>) in lambda definitions within the toml++ library implementation.
++/// \detail This macro offers a workaround to a bug in the old "legacy lambda processor" of Visual C++, which
++/// caused compile errors like "error C2057: expected constant expression", when it encountered such lambda's.
++/// These compile errors were reported by Kevin Dick, Jan 19, 2024, at https://github.com/marzer/tomlplusplus/issues/219
++//# }}
++
+ /// @}
+ //#====================================================================================================================
+ //# CHARCONV SUPPORT
+--- a/include/toml++/impl/table.hpp
++++ b/include/toml++/impl/table.hpp
+@@ -930,7 +930,10 @@
+ 					static_cast<node_ref>(*kvp.second)
+ 						.visit(
+ 							[&]([[maybe_unused]] auto&& v) //
++// Define this macro as a workaround to compile errors caused by a bug in MSVC's "legacy lambda processor".
++#if !TOML_DISABLE_CONDITIONAL_NOEXCEPT_LAMBDA
+ 							noexcept(for_each_is_nothrow_one<Func&&, Table&&, decltype(v)>::value)
++#endif
+ 							{
+ 								using value_ref = for_each_value_ref<decltype(v), Table&&>;
+ 								static_assert(std::is_reference_v<value_ref>);

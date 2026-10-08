@@ -8,6 +8,8 @@ package:
 source:
   url: https://github.com/marzer/tomlplusplus/archive/refs/tags/v{{ version }}.tar.gz
   sha256: 8517f65938a4faae9ccf8ebb36631a38c1cadfb5efa85d9a72e15b9e97d25155
+  patches:
+    - msvc-legacy-lambda.patch
 
 build:
   number: 0
@@ -21,6 +23,10 @@ requirements:
     - cmake
 
 test:
+  requires:
+    - {{ compiler('cxx') }}  # [win]
+  files:
+    - test_for_each.cpp
   commands:
     - test -f ${PREFIX}/include/toml++/toml.h  # [not win]
     - test -f ${PREFIX}/lib/cmake/tomlplusplus/tomlplusplusConfig.cmake  # [not win]
